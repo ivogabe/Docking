@@ -11,7 +11,7 @@ namespace Docking {
 		 * Creates a new transformation.
 		 * Yaw, pitch and roll are the rotation around axes, see http://planning.cs.uiuc.edu/node102.html
 		 */
-		Transformation(float yaw, float pitch, float roll, Vector transpose) {
+		public Transformation(float yaw, float pitch, float roll, Vector transpose) {
 			this.yaw = yaw;
 			this.pitch = pitch;
 			this.roll = roll;
