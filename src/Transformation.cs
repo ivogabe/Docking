@@ -45,6 +45,15 @@ namespace Docking {
 		public Vector Transform(Vector vector) {
 			return Rotate.MultiplyVector(vector).Add(Transpose);
 		}
+		
+		public Transformation Modify(float dX, float dY, float dZ, float dYaw, float dPitch, float dRoll) {
+			return new Transformation(
+				yaw + dYaw,
+				pitch + dPitch,
+				roll + dRoll,
+				Transpose.Add(new Vector(dX, dY, dZ))
+			);
+		}
 	}
 	struct Matrix {
 		public static Matrix Zero = new Matrix(0, 0, 0, 0, 0, 0, 0, 0, 0);
