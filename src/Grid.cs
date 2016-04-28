@@ -5,7 +5,7 @@ namespace Docking {
 		private float dimension = 1; // Armstrong
 		private float maxDistance = 8.5f; // Armstrong
 		
-		private Molecule molecule;
+		private Molecule moleculeA, moleculeB;
 		
 		private int minX;
 		private int maxX;
@@ -22,11 +22,12 @@ namespace Docking {
 		private int[] blockStartIndex;
 		private int[] atomIndices;
 		
-		public Grid(Molecule molecule) {
-			this.molecule = molecule;
+		public Grid(Molecule moleculeA, Molecule moleculeB) {
+			this.moleculeA = moleculeA;
+			this.moleculeB = moleculeB;
 			
-			for (int i = 0; i < molecule.Size; i++) {
-				Block block = GetBlock(molecule.GetAtom(i));
+			for (int i = 0; i < moleculeA.Size; i++) {
+				Block block = GetBlock(moleculeA.GetAtom(i));
 				if (block.X < minX) minX = block.X;
 				if (block.X > maxX) maxX = block.X;
 				if (block.Y < minY) minY = block.Y;
@@ -42,20 +43,45 @@ namespace Docking {
 			maxY += (int) (9 / dimension);
 			maxZ += (int) (9 / dimension);
 			
-			rangeX = maxX - minX;
-			rangeY = maxY - minY;
-			rangeZ = maxZ - minZ;
+			rangeX = maxX - minX + 1;
+			rangeY = maxY - minY + 1;
+			rangeZ = maxZ - minZ + 1;
 			
 			blocks = rangeX * rangeY * rangeZ;
 			atomsInBlock = new int[blocks];
-			
+			blockStartIndex = new int[blocks];
+			int atomIndicesSize = 0;
+			forEachBlockAndAtom((block, atom) => {
+				atomsInBlock[GetIndex(block)]++;
+				atomIndicesSize++;
+			});
+			int pos = 0;
+			for (int i = 0; i < blocks; i++) {
+				blockStartIndex[i] = pos;
+				pos += atomsInBlock[i];
+				atomsInBlock[i] = 0;
+			}
+			atomIndices = new int[atomIndicesSize];
+			forEachBlockAndAtom((block, atom) => {
+				int i = GetIndex(block);
+				atomIndices[blockStartIndex[i] + atomsInBlock[i]] = atom;
+				atomsInBlock[i]++;
+			});
+		}
+		
+		void forEachBlockAndAtom(Action<Block, int> callback) {
 			int radius = (int) Math.Ceiling(maxDistance / dimension);
-			for (int i = 0; i < molecule.Size; i++) {
-				Block block = GetBlock(molecule.GetAtom(i));
+			int radiusSquared = radius * radius;
+			for (int i = 0; i < moleculeA.Size; i++) {
+				Vector vector = moleculeA.GetAtom(i);
+				Block block = GetBlock(vector);
 				for (int x = block.X - radius; x <= block.X + radius; x++) {
 					for (int y = block.Y - radius; y <= block.Y + radius; y++) {
 						for (int z = block.Z - radius; z <= block.Z + radius; z++) {
-							
+							Block current = new Block(x, y, z);
+							if (vector.DistanceSquared(BlockCenter(current)) <= radiusSquared) {
+								callback(current, i);
+							}
 						}
 					}
 				}
@@ -87,6 +113,12 @@ namespace Docking {
 				(block.Y + 0.5f) * dimension,
 				(block.Z + 0.5f) * dimension
 			);
+		}
+		
+		public float GetValue(Transformation transformation) {
+			float result = 0;
+			// TODO
+			return result;
 		}
 	}
 	
