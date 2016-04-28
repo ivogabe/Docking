@@ -3,44 +3,52 @@ using System;
 namespace Docking {
 	struct Transformation {
 		public Vector Transpose;
+		public Matrix Rotate;
 		
-		// See http://planning.cs.uiuc.edu/node102.html
-		public float Yaw;
-		public float Pitch;
-		public float Roll;
+		float yaw, pitch, roll;
+		
+		/**
+		 * Creates a new transformation.
+		 * Yaw, pitch and roll are the rotation around axes, see http://planning.cs.uiuc.edu/node102.html
+		 */
+		Transformation(float yaw, float pitch, float roll, Vector transpose) {
+			this.yaw = yaw;
+			this.pitch = pitch;
+			this.roll = roll;
+			Transpose = transpose;
+			Rotate = Matrix.Zero;
+			Rotate = yawMatrix().Multiply(pitchMatrix()).Multiply(rollMatrix());
+		}
 		
 		private Matrix yawMatrix() {
 			return new Matrix(
-				(float)Math.Cos(Yaw), -(float)Math.Sin(Yaw), 0,
-				(float)Math.Sin(Yaw), (float)Math.Cos(Yaw), 0,
+				(float)Math.Cos(yaw), -(float)Math.Sin(yaw), 0,
+				(float)Math.Sin(yaw), (float)Math.Cos(yaw), 0,
 				0, 0, 1
 			);
 		}
 		private Matrix pitchMatrix() {
 			return new Matrix(
-				(float)Math.Cos(Pitch), 0, (float)Math.Sin(Pitch),
+				(float)Math.Cos(pitch), 0, (float)Math.Sin(pitch),
 				0, 1, 0,
-				-(float)Math.Sin(Pitch), 0, (float)Math.Cos(Pitch)
+				-(float)Math.Sin(pitch), 0, (float)Math.Cos(pitch)
 			);
 		}
 		private Matrix rollMatrix() {
 			return new Matrix(
 				1, 0, 0,
-				0, (float)Math.Cos(Roll), -(float)Math.Sin(Roll),
-				0, (float)Math.Sin(Roll), (float)Math.Cos(Roll)
+				0, (float)Math.Cos(roll), -(float)Math.Sin(roll),
+				0, (float)Math.Sin(roll), (float)Math.Cos(roll)
 			);
 		}
 		
-		public Vector Transform(Vector point) {
-			Vector rotated = yawMatrix().MultiplyVector(
-				pitchMatrix().MultiplyVector(
-					yawMatrix().MultiplyVector(point)
-				)
-			);
-			return rotated.add(Transpose);
+		public Vector Transform(Vector vector) {
+			return Rotate.MultiplyVector(vector).Add(Transpose);
 		}
 	}
 	struct Matrix {
+		public static Matrix Zero = new Matrix(0, 0, 0, 0, 0, 0, 0, 0, 0);
+		
 		public Matrix(float a1, float a2, float a3, float b1, float b2, float b3, float c1, float c2, float c3) {
 			A1 = a1;
 			A2 = a2;
@@ -56,6 +64,22 @@ namespace Docking {
 		public float A1, A2, A3;
 		public float B1, B2, B3;
 		public float C1, C2, C3;
+		
+		public Matrix Multiply(Matrix other) {
+			return new Matrix(
+				A1 * other.A1 + A2 * other.B1 + A3 * other.C1,
+				A2 * other.A2 + A2 * other.B2 + A3 * other.C2,
+				A3 * other.A3 + A2 * other.B3 + A3 * other.C3,
+				
+				B1 * other.A1 + B2 * other.B1 + B3 * other.C1,
+				B1 * other.A2 + B2 * other.B2 + B3 * other.C2,
+				B1 * other.A3 + B2 * other.B3 + B3 * other.C3,
+				
+				C1 * other.A1 + C2 * other.B1 + C3 * other.C1,
+				C1 * other.A2 + C2 * other.B2 + C3 * other.C2,
+				C1 * other.A3 + C2 * other.B3 + C3 * other.C3
+			);
+		}
 		
 		public Vector MultiplyVector(Vector vector) {
 			return new Vector(
@@ -75,7 +99,7 @@ namespace Docking {
 		public float Y;
 		public float Z;
 		
-		public Vector add(Vector other) {
+		public Vector Add(Vector other) {
 			return new Vector(
 				X + other.X,
 				Y + other.Y,
