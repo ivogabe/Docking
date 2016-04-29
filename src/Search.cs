@@ -13,6 +13,7 @@ namespace Docking {
 	
 	class Search {
 		public State Current;
+		public State Best;
 		private int stableSteps;
 		private int iteration = 0;
 		private Random random = new Random();
@@ -23,7 +24,7 @@ namespace Docking {
 		public Search(Grid grid) {
 			this.grid = grid;
 			Transformation transform = new Transformation(0, 0, 0, new Vector(0, 0, 0));
-			Current = new State(
+			Best = Current = new State(
 				transform,
 				grid.GetValue(transform)
 			);
@@ -41,16 +42,20 @@ namespace Docking {
 			}
 			iteration++;
 			State neighbour = GetNeighbour();
-			if (neighbour.Value <= Current.Value) {
+			float delta = neighbour.Value - Current.Value;
+			if (delta <= 0) {
 				// Improvement, accept always
 				Accept(neighbour);
 				return;
 			}
-			// TODO: Simulated annealing
+			if (random.NextDouble() < Math.Exp(-delta / controlParameter)) {
+				Accept(neighbour);
+			}
 		}
 		
 		private void Accept(State neighbour) {
 			Current = neighbour;
+			if (Current.Value <= Best.Value) Best = Current;
 			stableSteps = 0;
 		}
 
