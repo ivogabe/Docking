@@ -5,7 +5,7 @@ namespace Docking {
 		public float[] Y;
 		public float[] Z;
 		public float[] Diameter;
-		public float[] Load;
+		public float[] Charge;
 		public Molecule(string fileName) {
 			// TODO: Load data from PDB file
 		}

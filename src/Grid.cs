@@ -2,8 +2,8 @@ using System;
 
 namespace Docking {
 	class Grid {
-		private float dimension = 1; // Armstrong
-		private float maxDistance = 8.5f; // Armstrong
+		private float dimension = 1; // Ångstrom
+		private float maxDistance = 8.5f; // Ångstrom
 		
 		private Molecule moleculeA, moleculeB;
 		
