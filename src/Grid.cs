@@ -4,6 +4,16 @@ namespace Docking {
 	class Grid {
 		private float dimension = 1; // Ångstrom
 		private float maxDistance = 8.5f; // Ångstrom
+		private float maxDistanceSquared;
+		
+		/**
+		 * Constant for electrostatic energy.
+		 */
+		private float epsilon0 = 1;
+		/**
+		 * Constant for Vanderwaals energy.
+		 */
+		private float epsilon = 25;
 		
 		private Molecule moleculeA, moleculeB;
 		
@@ -23,6 +33,8 @@ namespace Docking {
 		private int[] atomIndices;
 		
 		public Grid(Molecule moleculeA, Molecule moleculeB) {
+			maxDistanceSquared = maxDistance * maxDistance;
+			
 			this.moleculeA = moleculeA;
 			this.moleculeB = moleculeB;
 			
@@ -115,10 +127,37 @@ namespace Docking {
 			);
 		}
 		
-		public float GetValue(Transformation transformation) {
+		public float GetValue(Transformation transform) {
 			float result = 0;
-			// TODO
+			
+			for (int i = 0; i < moleculeB.Size; i++) {
+				Vector atom = transform.Transform(moleculeB.GetAtom(i));
+				int blockId = GetIndex(GetBlock(atom));
+				int end = blockStartIndex[blockId] + atomsInBlock[blockId];
+				for (int j = blockStartIndex[blockId]; j < end; j++) {
+					result += energyBetween(transform, atomIndices[j], i);
+				}
+			}
 			return result;
+		}
+		
+		private float energyBetween(Transformation transform, int idA, int idB) {
+			Vector atomA = moleculeA.GetAtom(idA);
+			Vector atomB = transform.Transform(moleculeB.GetAtom(idB));
+			float distanceSquared = atomA.DistanceSquared(atomB);
+			if (distanceSquared > maxDistanceSquared) return 0;
+			
+			float distance = (float) Math.Sqrt(distanceSquared);
+			float electrostatic = moleculeA.Charge[idA] * moleculeB.Charge[idB] / (4 * (float) Math.PI * epsilon0 * distance);
+			float sigma = (moleculeA.Diameter[idA] + moleculeB.Diameter[idB]) * 0.5f;
+			float pow6 = power6(sigma / distance);
+			float vanderwaals = pow6 * (pow6 - 1);
+			
+			return electrostatic + vanderwaals;
+		}
+		
+		private float power6(float value) {
+			return value * value * value * value * value * value;
 		}
 	}
 	
