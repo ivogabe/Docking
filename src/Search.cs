@@ -75,16 +75,14 @@ namespace Docking {
 			float dRoll = randomFloat(sizeParameter / 2);
 			
 			Transformation a = Current.Transform.Modify(dX, dY, dZ, dYaw, dPitch, dRoll);
-			int factor = random.Next(2);
-			if (factor == 0) factor = -1;
-			Transformation b = Current.Transform.Modify(factor * dX, factor * dY, factor * dZ, factor * dYaw, factor * dPitch, factor * dRoll);
+			// int factor = random.Next(1) == 1 ? 2 : -1;
+			// Transformation b = Current.Transform.Modify(factor * dX, factor * dY, factor * dZ, factor * dYaw, factor * dPitch, factor * dRoll);
 			
 			float aValue = grid.GetValue(a);
-			float bValue = grid.GetValue(b);
+			// float bValue = grid.GetValue(b);
 			
 			// TODO: Plot graph and guess best position
-			State best = aValue > bValue ? new State(b, bValue) : new State(a, aValue);
-			return best;
+			return new State(a, aValue);
 		}
 		
 		private float randomFloat(float size) {
