@@ -95,9 +95,6 @@ namespace Docking {
 			} else {
 				return new State(c, cValue);
 			}
-			
-			// TODO: Plot graph and guess best position
-			return new State(a, aValue);
 		}
 		
 		private float randomFloat(float size) {
