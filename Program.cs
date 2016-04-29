@@ -7,6 +7,7 @@ namespace Docking {
 				Console.WriteLine("Docking");
 				Console.WriteLine("Usage:");
 				Console.WriteLine("  dnx run protein.pdb ligand.pdb output.pdb");
+				return;
 			}
 			Molecule moleculeA = new Molecule(args[0]);
 			Molecule moleculeB = new Molecule(args[1]);
