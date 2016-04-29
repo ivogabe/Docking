@@ -17,8 +17,22 @@ namespace Docking {
 				string line = read.ReadLine();
 				if (line.StartsWith("ATOM")) {
 					file.Add(line);
-				}
-				
+				}				
+			}
+			Size = file.Count;
+			X = new float[Size];
+			Y = new float[Size];
+			Z = new float[Size];
+			Diameter = new float[Size];
+			Charge = new float[Size];
+			int t = 0;
+			foreach(string r in file) {
+				X[t] = float.Parse(r.Substring(30, 8));
+				Y[t] = float.Parse(r.Substring(38, 8));
+				Z[t] = float.Parse(r.Substring(46, 8));
+				Charge[t] = float.Parse(r.Substring(55, 8));
+				Diameter[t] = float.Parse(r.Substring(62, 6)) * 2;
+				t ++;
 			}
 			 
 		}
