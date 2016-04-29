@@ -118,6 +118,11 @@ namespace Docking {
 			int z = block.Z - rangeZ;
 			return x + (y * rangeX + z * rangeY);
 		}
+		bool isOutOfRange(Block block) {
+			return block.X < minX || block.X > maxX
+				|| block.Y < minY || block.Y > maxY
+				|| block.Z < minZ || block.Z > maxZ;
+		}
 		
 		Vector BlockCenter(Block block) {
 			return new Vector(
@@ -129,15 +134,24 @@ namespace Docking {
 		
 		public float GetValue(Transformation transform) {
 			float result = 0;
+			bool near = false;
 			
 			for (int i = 0; i < moleculeB.Size; i++) {
 				Vector atom = transform.Transform(moleculeB.GetAtom(i));
-				int blockId = GetIndex(GetBlock(atom));
+				Block block = GetBlock(atom);
+				
+				if (isOutOfRange(block)) continue;
+				
+				int blockId = GetIndex(block);
 				int end = blockStartIndex[blockId] + atomsInBlock[blockId];
 				for (int j = blockStartIndex[blockId]; j < end; j++) {
 					result += energyBetween(transform, atomIndices[j], i);
+					near = true;
 				}
 			}
+			// If the molecules don't interact with eachother,
+			// return MaxValue so we won't choose this configuration
+			if (!near) return float.MaxValue;
 			return result;
 		}
 		
