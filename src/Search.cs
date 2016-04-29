@@ -39,6 +39,13 @@ namespace Docking {
 		public void Step() {
 			if (iteration % 100 == 0) {
 				Console.WriteLine("Iteration " + iteration + ", value " + Current.Value);
+				controlParameter *= 0.95f;
+				sizeParameter *= 0.98f;
+			}
+			if (stableSteps > 200) {
+				controlParameter *= 1.5f;
+				sizeParameter *= 1.5f;
+				stableSteps = 0;
 			}
 			iteration++;
 			State neighbour = GetNeighbour();
