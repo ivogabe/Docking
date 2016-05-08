@@ -1,8 +1,9 @@
 using System;
 namespace Docking {
 	class Grid {
-		private float dimension = 100; // Ångstrom
-		private float maxDistance = 8.5f * 100; // Ångstrom
+		private float dimension = 1f; // Ångstrom
+		private float scale; // Ångstrom ^ -1
+		private float maxDistance = 8.5f; // Ångstrom
 		private float maxDistanceSquared;
 		
 		/**
@@ -32,6 +33,7 @@ namespace Docking {
 		private int[] atomIndices;
 		
 		public Grid(Molecule moleculeA, Molecule moleculeB) {
+			scale = 1 / dimension;
 			maxDistanceSquared = maxDistance * maxDistance;
 			
 			this.moleculeA = moleculeA;
@@ -46,13 +48,14 @@ namespace Docking {
 				if (block.Z < minZ) minZ = block.Z;
 				if (block.Z > maxZ) maxZ = block.Z;
 			}
-			// Add 9 Armstrong on all edges
-			minX -= (int) (9 / dimension);
-			minY -= (int) (9 / dimension);
-			minZ -= (int) (9 / dimension);
-			maxX += (int) (9 / dimension);
-			maxY += (int) (9 / dimension);
-			maxZ += (int) (9 / dimension);
+			// Add small buffer to all edges
+			int edge = (int) Math.Ceiling(4 * maxDistance * scale);
+			minX -= edge;
+			minY -= edge;
+			minZ -= edge;
+			maxX += edge;
+			maxY += edge;
+			maxZ += edge;
 			
 			rangeX = maxX - minX + 1;
 			rangeY = maxY - minY + 1;
@@ -63,16 +66,12 @@ namespace Docking {
 			blockStartIndex = new int[blocks];
 			int atomIndicesSize = 0;
 			forEachBlockAndAtom((block, atom) => {
-				// Console.WriteLine("Atom in block " + GetIndex(block));
 				atomsInBlock[GetIndex(block)]++;
 				atomIndicesSize++;
 			});
 			int pos = 0;
 			for (int i = 0; i < blocks; i++) {
 				blockStartIndex[i] = pos;
-				if (atomsInBlock[i] > 0) {
-					// Console.WriteLine("i = " + i + ", pos = " + pos + ", length = " + atomsInBlock[i] + ", total = " + moleculeA.Size);
-				}
 				pos += atomsInBlock[i];
 				atomsInBlock[i] = 0;
 			}
@@ -85,7 +84,7 @@ namespace Docking {
 		}
 		
 		void forEachBlockAndAtom(Action<Block, int> callback) {
-			int radius = (int) Math.Ceiling(maxDistance / dimension);
+			int radius = (int) Math.Ceiling(maxDistance * scale);
 			float radiusSquared = maxDistance * maxDistance + dimension * dimension;
 			for (int i = 0; i < moleculeA.Size; i++) {
 				Vector vector = moleculeA.GetAtom(i);
@@ -111,9 +110,9 @@ namespace Docking {
 		
 		Block GetBlock(Vector point) {
 			return new Block(
-				round(point.X / dimension),
-				round(point.Y / dimension),
-				round(point.Z / dimension)
+				round(point.X * scale),
+				round(point.Y * scale),
+				round(point.Z * scale)
 			);
 		}
 		int round(float x) {

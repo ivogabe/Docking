@@ -17,7 +17,7 @@ namespace Docking {
 		private int stableSteps;
 		private int iteration = 0;
 		private Random random = new Random();
-		private float sizeParameter = 6f;
+		private float sizeParameter = 0.1f;
 		private float controlParameter;
 		private Grid grid;
 		
@@ -28,9 +28,9 @@ namespace Docking {
 			Console.WriteLine("Find starting position");
 			do {
 				Vector vector = new Vector(
-					randomFloat(10) - 5,
-					randomFloat(10) - 5,
-					randomFloat(10) - 5
+					randomFloat(120) - 60,
+					randomFloat(120) - 60,
+					randomFloat(120) - 60
 				);
 				transform = new Transformation(
 					randomFloat((float)Math.PI * 2),
@@ -39,7 +39,7 @@ namespace Docking {
 					vector
 				);
 				value = grid.GetValue(transform);
-			} while (float.IsNaN(value) || float.IsInfinity(value) || value > 1e20);
+			} while (float.IsNaN(value) || float.IsInfinity(value) || value > 10);
 			controlParameter = 0.5f;
 			Console.WriteLine("Start local search");
 			Best = Current = new State(
@@ -54,13 +54,22 @@ namespace Docking {
 			}
 		}
 		
+		private bool unfinishedLine = false;
+		private void finishLine() {
+			if (unfinishedLine) {
+				unfinishedLine = false;
+				Console.WriteLine();
+			}
+		}
 		public void Step() {
-			if (iteration % 500 == 0) {
+			if (iteration % 100 == 0) {
+				finishLine();
 				Console.WriteLine("Iteration " + iteration + ", value " + Current.Value);
 				controlParameter *= 0.9f;
 				sizeParameter *= 0.7f;
 			}
-			if (stableSteps > 100) {
+			if (stableSteps > 10) {
+				finishLine();
 				controlParameter *= 1.5f;
 				sizeParameter *= 1.8f;
 				stableSteps = 0;
@@ -75,31 +84,36 @@ namespace Docking {
 			float delta = (neighbour.Value - Current.Value);
 			if (delta <= 0) {
 				// Improvement, accept always
-				Console.WriteLine(" [+] " + Current.Value + " -> " + neighbour.Value);
+				finishLine();
+				Console.WriteLine(" [+] " + Current.Value + " -> " + neighbour.Value + (neighbour.Value <= Best.Value ? " best" : ""));
 				Accept(neighbour);
-				return;
-			}
-			if (random.NextDouble() < Math.Exp(-delta / (Math.Max(Current.Value, 1) * controlParameter))) {
+			} else if (random.NextDouble() < Math.Exp(-delta / (Math.Max(Current.Value, 1) * controlParameter))) {
+				finishLine();
 				Console.WriteLine(" [-] " + Current.Value + " -> " + neighbour.Value);
 				Accept(neighbour);
+			} else {
+				if (!unfinishedLine) {
+					Console.Write(" ");
+				}
+				Console.Write("/");
+				unfinishedLine = true;
 			}
 		}
 		
 		private void Accept(State neighbour) {
-			if (Math.Abs(Current.Value - neighbour.Value) > 10) {
+			if (Math.Abs(Current.Value - neighbour.Value) > 1) {
 				stableSteps = 0;
 			}
 			Current = neighbour;
 			if (Current.Value < Best.Value) {
-				Console.WriteLine(" Best " + Current.Value);
 				Best = Current;
 			}
 		}
 
 		private State GetNeighbour() {
-			float dX = randomFloat(sizeParameter * 4);
-			float dY = randomFloat(sizeParameter * 4);
-			float dZ = randomFloat(sizeParameter * 4);
+			float dX = randomFloat(sizeParameter * 20);
+			float dY = randomFloat(sizeParameter * 20);
+			float dZ = randomFloat(sizeParameter * 20);
 			float dYaw = randomFloat(sizeParameter);
 			float dPitch = randomFloat(sizeParameter);
 			float dRoll = randomFloat(sizeParameter);
@@ -126,8 +140,7 @@ namespace Docking {
 				c = Current.Transform.Modify(x4 * dX, x4 * dY, x4 * dZ, x4 * dYaw, x4 * dPitch, x4 * dRoll);
 				cValue = grid.GetValue(c);
 			}
-			
-			
+
 			if (aValue <= bValue && aValue <= cValue) {
 				return new State(a, aValue);
 			} else if (bValue <= cValue) {
