@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Collections.Generic;
 
@@ -25,14 +26,15 @@ namespace Docking {
 			Z = new float[Size];
 			Diameter = new float[Size];
 			Charge = new float[Size];
-			int t = 0;
+			int i = 0;
 			foreach(string r in atoms) {
-				X[t] = float.Parse(r.Substring(30, 8));
-				Y[t] = float.Parse(r.Substring(38, 8));
-				Z[t] = float.Parse(r.Substring(46, 8));
-				Charge[t] = float.Parse(r.Substring(55, 8));
-				Diameter[t] = float.Parse(r.Substring(62, 6)) * 2;
-				t++;
+				List<string> data = SplitString(r);
+				X[i] = float.Parse(data[5], System.Globalization.CultureInfo.InvariantCulture);
+				Y[i] = float.Parse(data[6], System.Globalization.CultureInfo.InvariantCulture);
+				Z[i] = float.Parse(data[7], System.Globalization.CultureInfo.InvariantCulture);
+				Charge[i] = float.Parse(data[8], System.Globalization.CultureInfo.InvariantCulture);
+				Diameter[i] = float.Parse(data[9], System.Globalization.CultureInfo.InvariantCulture) * 2;
+				i++;
 			}
 		}
 		
@@ -42,6 +44,20 @@ namespace Docking {
 				Y[id],
 				Z[id]
 			);
+		}
+		
+		public static List<string> SplitString(string source) {
+			List<string> result = new List<string>();
+			int begin = 0;
+			while (begin < source.Length) {
+				int end = source.IndexOf(" ", begin);
+				if (end == -1) end = source.Length;
+				if (end != begin) {
+					result.Add(source.Substring(begin, end - begin));
+				}
+				begin = end + 1;
+			}
+			return result;
 		}
 	}
 }
