@@ -3,12 +3,13 @@ using System;
 namespace Docking {
 	public class Program {
 		public static void Main(string[] args) {
-			if (args.Length != 2) {
+			if (args.Length != 3) {
 				Console.WriteLine("Docking");
 				Console.WriteLine("Usage:");
 				Console.WriteLine("  dnx run protein.pdb ligand.pdb output.pdb");
 				return;
 			}
+			Console.WriteLine("Read molecules");
 			Molecule moleculeA = new Molecule(args[0]);
 			Molecule moleculeB = new Molecule(args[1]);
 			Grid grid = new Grid(moleculeA, moleculeB);

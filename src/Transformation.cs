@@ -54,6 +54,10 @@ namespace Docking {
 				Transpose.Add(new Vector(dX, dY, dZ))
 			);
 		}
+		
+		public override string ToString() {
+			return "Transformation (" + yaw + ", " + pitch + ", " + roll + "); " + Transpose;
+		}
 	}
 	struct Matrix {
 		public static Matrix Zero = new Matrix(0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -126,6 +130,10 @@ namespace Docking {
 		}
 		public float Distance(Vector other) {
 			return (float) Math.Sqrt(DistanceSquared(other));
+		}
+		
+		public override string ToString() {
+			return "Vector (" + X + ", " + Y + ", " + Z + ")";
 		}
 	}
 }

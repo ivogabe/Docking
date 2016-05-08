@@ -17,16 +17,34 @@ namespace Docking {
 		private int stableSteps;
 		private int iteration = 0;
 		private Random random = new Random();
-		private float sizeParameter = 1;
-		private float controlParameter = 10;
+		private float sizeParameter = 6f;
+		private float controlParameter;
 		private Grid grid;
 		
 		public Search(Grid grid) {
 			this.grid = grid;
-			Transformation transform = new Transformation(0, 0, 0, new Vector(0, 0, 0));
+			float value = float.NaN;
+			Transformation transform;
+			Console.WriteLine("Find starting position");
+			do {
+				Vector vector = new Vector(
+					randomFloat(10) - 5,
+					randomFloat(10) - 5,
+					randomFloat(10) - 5
+				);
+				transform = new Transformation(
+					randomFloat((float)Math.PI * 2),
+					randomFloat((float)Math.PI * 2),
+					randomFloat((float)Math.PI * 2),
+					vector
+				);
+				value = grid.GetValue(transform);
+			} while (float.IsNaN(value) || float.IsInfinity(value) || value > 1e20);
+			controlParameter = 0.5f;
+			Console.WriteLine("Start local search");
 			Best = Current = new State(
 				transform,
-				grid.GetValue(transform)
+				value
 			);
 		}
 		
@@ -37,56 +55,78 @@ namespace Docking {
 		}
 		
 		public void Step() {
-			if (iteration % 100 == 0) {
+			if (iteration % 500 == 0) {
 				Console.WriteLine("Iteration " + iteration + ", value " + Current.Value);
-				controlParameter *= 0.95f;
-				sizeParameter *= 0.98f;
+				controlParameter *= 0.9f;
+				sizeParameter *= 0.7f;
 			}
-			if (stableSteps > 200) {
+			if (stableSteps > 100) {
 				controlParameter *= 1.5f;
-				sizeParameter *= 1.5f;
+				sizeParameter *= 1.8f;
 				stableSteps = 0;
+				Console.WriteLine(" Local minimum!");
 			}
 			iteration++;
+			stableSteps++;
 			State neighbour = GetNeighbour();
-			float delta = neighbour.Value - Current.Value;
+			if (float.IsNaN(neighbour.Value)) {
+				return;
+			}
+			float delta = (neighbour.Value - Current.Value);
 			if (delta <= 0) {
 				// Improvement, accept always
+				Console.WriteLine(" [+] " + Current.Value + " -> " + neighbour.Value);
 				Accept(neighbour);
 				return;
 			}
-			if (random.NextDouble() < Math.Exp(-delta / controlParameter)) {
+			if (random.NextDouble() < Math.Exp(-delta / (Math.Max(Current.Value, 1) * controlParameter))) {
+				Console.WriteLine(" [-] " + Current.Value + " -> " + neighbour.Value);
 				Accept(neighbour);
 			}
 		}
 		
 		private void Accept(State neighbour) {
+			if (Math.Abs(Current.Value - neighbour.Value) > 10) {
+				stableSteps = 0;
+			}
 			Current = neighbour;
-			if (Current.Value <= Best.Value) Best = Current;
-			stableSteps = 0;
+			if (Current.Value < Best.Value) {
+				Console.WriteLine(" Best " + Current.Value);
+				Best = Current;
+			}
 		}
 
 		private State GetNeighbour() {
-			float dX = randomFloat(sizeParameter);
-			float dY = randomFloat(sizeParameter);
-			float dZ = randomFloat(sizeParameter);
-			float dYaw = randomFloat(sizeParameter / 2);
-			float dPitch = randomFloat(sizeParameter / 2);
-			float dRoll = randomFloat(sizeParameter / 2);
+			float dX = randomFloat(sizeParameter * 4);
+			float dY = randomFloat(sizeParameter * 4);
+			float dZ = randomFloat(sizeParameter * 4);
+			float dYaw = randomFloat(sizeParameter);
+			float dPitch = randomFloat(sizeParameter);
+			float dRoll = randomFloat(sizeParameter);
 			
 			// Choose 3 points (0, 1, x3) and plot a parabola between them.
 			// Then search the minimum of the parabola, if it exists.
 			
+			// Console.WriteLine("------------");
+			
 			Transformation a = Current.Transform.Modify(dX, dY, dZ, dYaw, dPitch, dRoll);
-			float x3 = random.Next(1) == 1 ? 2 : -1;
+			float x3 = -1; // random.Next(1) == 1 ? 2 : -1;
 			Transformation b = Current.Transform.Modify(x3 * dX, x3 * dY, x3 * dZ, x3 * dYaw, x3 * dPitch, x3 * dRoll);
 			
 			float aValue = grid.GetValue(a);
 			float bValue = grid.GetValue(b);
 			
 			float x4 = findExtreme(0, 1, x3, Current.Value, aValue, bValue);
-			Transformation c = Current.Transform.Modify(x4 * dX, x4 * dY, x4 * dZ, x4 * dYaw, x4 * dPitch, x4 * dRoll);
-			float cValue = grid.GetValue(c);
+			Transformation c;
+			float cValue;
+			if (float.IsNaN(x4)) {
+				c = a;
+				cValue = float.MaxValue;
+			} else {
+				c = Current.Transform.Modify(x4 * dX, x4 * dY, x4 * dZ, x4 * dYaw, x4 * dPitch, x4 * dRoll);
+				cValue = grid.GetValue(c);
+			}
+			
 			
 			if (aValue <= bValue && aValue <= cValue) {
 				return new State(a, aValue);
@@ -108,6 +148,9 @@ namespace Docking {
 			float a1 = x1 * (y2 - y3);
 			float a2 = x2 * (y3 - y1);
 			float a3 = x3 * (y1 - y2);
+			// Console.WriteLine(x1 + ", " + x2 + ", " + x3);
+			// Console.WriteLine(y1 + ", " + y2 + ", " + y3);
+			// Console.WriteLine(a1 + ", " + a2 + ", " + a3 + "; " + (a1 + a2 + a3));
 			return (x1 * a1 + x2 * a2 + x3 * a3) / (a1 + a2 + a3);
 		}
 	}

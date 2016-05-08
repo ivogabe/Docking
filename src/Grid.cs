@@ -1,9 +1,8 @@
 using System;
-
 namespace Docking {
 	class Grid {
-		private float dimension = 1; // Ångstrom
-		private float maxDistance = 8.5f; // Ångstrom
+		private float dimension = 100; // Ångstrom
+		private float maxDistance = 8.5f * 100; // Ångstrom
 		private float maxDistanceSquared;
 		
 		/**
@@ -27,7 +26,7 @@ namespace Docking {
 		private int rangeY;
 		private int rangeZ;
 		
-		private int blocks;
+		private long blocks;
 		private int[] atomsInBlock;
 		private int[] blockStartIndex;
 		private int[] atomIndices;
@@ -64,12 +63,16 @@ namespace Docking {
 			blockStartIndex = new int[blocks];
 			int atomIndicesSize = 0;
 			forEachBlockAndAtom((block, atom) => {
+				// Console.WriteLine("Atom in block " + GetIndex(block));
 				atomsInBlock[GetIndex(block)]++;
 				atomIndicesSize++;
 			});
 			int pos = 0;
 			for (int i = 0; i < blocks; i++) {
 				blockStartIndex[i] = pos;
+				if (atomsInBlock[i] > 0) {
+					// Console.WriteLine("i = " + i + ", pos = " + pos + ", length = " + atomsInBlock[i] + ", total = " + moleculeA.Size);
+				}
 				pos += atomsInBlock[i];
 				atomsInBlock[i] = 0;
 			}
@@ -83,17 +86,23 @@ namespace Docking {
 		
 		void forEachBlockAndAtom(Action<Block, int> callback) {
 			int radius = (int) Math.Ceiling(maxDistance / dimension);
-			int radiusSquared = radius * radius;
+			float radiusSquared = maxDistance * maxDistance + dimension * dimension;
 			for (int i = 0; i < moleculeA.Size; i++) {
 				Vector vector = moleculeA.GetAtom(i);
 				Block block = GetBlock(vector);
+				// Console.WriteLine("atom  " + vector);
+				// Console.WriteLine("block " + BlockCenter(block));
+				
 				for (int x = block.X - radius; x <= block.X + radius; x++) {
 					for (int y = block.Y - radius; y <= block.Y + radius; y++) {
 						for (int z = block.Z - radius; z <= block.Z + radius; z++) {
 							Block current = new Block(x, y, z);
-							if (vector.DistanceSquared(BlockCenter(current)) <= radiusSquared) {
+							// Console.WriteLine("atom  " + vector);
+							// Console.WriteLine("block " + BlockCenter(current));
+							// Console.WriteLine("Distance squared " + vector.DistanceSquared(BlockCenter(current)) + ", max " + radiusSquared);
+							// if (vector.DistanceSquared(BlockCenter(current)) <= radiusSquared) {
 								callback(current, i);
-							}
+							// }
 						}
 					}
 				}
@@ -113,9 +122,9 @@ namespace Docking {
 		}
 		
 		int GetIndex(Block block) {
-			int x = block.X - rangeX;
-			int y = block.Y - rangeY;
-			int z = block.Z - rangeZ;
+			int x = block.X - minX;
+			int y = block.Y - minY;
+			int z = block.Z - minZ;
 			return x + (y * rangeX + z * rangeY);
 		}
 		bool isOutOfRange(Block block) {
@@ -144,14 +153,23 @@ namespace Docking {
 				
 				int blockId = GetIndex(block);
 				int end = blockStartIndex[blockId] + atomsInBlock[blockId];
+				// Console.WriteLine("start = " + blockStartIndex[blockId] + ", end = " + end + ", " + blockId);
 				for (int j = blockStartIndex[blockId]; j < end; j++) {
-					result += energyBetween(transform, atomIndices[j], i);
-					near = true;
+					float energy = energyBetween(transform, atomIndices[j], i);
+					if (energy != 0) {
+						near = true;
+						result += energy;
+					}
 				}
 			}
 			// If the molecules don't interact with eachother,
 			// return MaxValue so we won't choose this configuration
-			if (!near) return float.MaxValue;
+			if (!near) {
+				// Console.WriteLine("Too far " + transform);
+				return float.MaxValue;
+			} else {
+				// Console.WriteLine("Ok " + result + ", " + transform);
+			}
 			return result;
 		}
 		
@@ -161,7 +179,7 @@ namespace Docking {
 			float distanceSquared = atomA.DistanceSquared(atomB);
 			if (distanceSquared > maxDistanceSquared) return 0;
 			
-			float distance = (float) Math.Sqrt(distanceSquared);
+			float distance = Math.Max((float) Math.Sqrt(distanceSquared), 0.01f);
 			float electrostatic = moleculeA.Charge[idA] * moleculeB.Charge[idB] / (4 * (float) Math.PI * epsilon0 * distance);
 			float sigma = (moleculeA.Diameter[idA] + moleculeB.Diameter[idB]) * 0.5f;
 			float pow6 = power6(sigma / distance);
