@@ -4,14 +4,20 @@ using System.Collections.Generic;
 
 namespace Docking {
 	class Molecule {
+		public string FileName;
 		public int Size;
+		public string[] AtomNames;
+		public string[] AminoAcids;
+		public int[] AminoAcidIds;
 		public float[] X;
 		public float[] Y;
 		public float[] Z;
 		public float[] Diameter;
 		public float[] Charge;
+		public int MaxAminoAcidId;
 		public Molecule(string fileName) {
-			// TODO: Load data from PDB file
+			FileName = fileName;
+			
 			StreamReader read = new StreamReader(fileName);
 			List<string> atoms = new List<string>();
 			while (read.Peek() >= 0) {
@@ -21,6 +27,9 @@ namespace Docking {
 				}				
 			}
 			Size = atoms.Count;
+			AtomNames = new string[Size];
+			AminoAcids = new string[Size];
+			AminoAcidIds = new int[Size];
 			X = new float[Size];
 			Y = new float[Size];
 			Z = new float[Size];
@@ -29,6 +38,12 @@ namespace Docking {
 			int i = 0;
 			foreach(string r in atoms) {
 				List<string> data = SplitString(r);
+				AtomNames[i] = data[2];
+				AminoAcids[i] = data[3];
+				AminoAcidIds[i] = int.Parse(data[4]);
+				if (AminoAcidIds[i] > MaxAminoAcidId) {
+					MaxAminoAcidId = AminoAcidIds[i];
+				}
 				X[i] = float.Parse(data[5], System.Globalization.CultureInfo.InvariantCulture);
 				Y[i] = float.Parse(data[6], System.Globalization.CultureInfo.InvariantCulture);
 				Z[i] = float.Parse(data[7], System.Globalization.CultureInfo.InvariantCulture);

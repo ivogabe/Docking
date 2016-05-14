@@ -15,8 +15,9 @@ namespace Docking {
 			Grid grid = new Grid(moleculeA, moleculeB);
 			Search search = new Search(grid);
 			search.Run(10000);
+			Console.WriteLine();
 			Console.WriteLine("Best score " + search.Best.Value);
-			Output.Write(args[2], moleculeA, moleculeB, search.Best.Transform);
+			Output.Write(args[2], moleculeA, moleculeB, search.Best.Transform, search.Best.Value);
 		}
 	}
 }
