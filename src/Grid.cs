@@ -182,7 +182,7 @@ namespace Docking {
 			float electrostatic = moleculeA.Charge[idA] * moleculeB.Charge[idB] / (4 * (float) Math.PI * epsilon0 * distance);
 			float sigma = (moleculeA.Diameter[idA] + moleculeB.Diameter[idB]) * 0.5f;
 			float pow6 = power6(sigma / distance);
-			float vanderwaals = pow6 * (pow6 - 1);
+			float vanderwaals = 4 * epsilon * pow6 * (pow6 - 1);
 			
 			return electrostatic + vanderwaals;
 		}
