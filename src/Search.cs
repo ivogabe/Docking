@@ -69,7 +69,7 @@ namespace Docking {
 				sizeParameter *= 0.7f;
 			}
 			if (stableSteps > 10) {
-				finishLine();
+				unfinishedLine = false;
 				controlParameter *= 1.5f;
 				sizeParameter *= 1.8f;
 				stableSteps = 0;
@@ -87,7 +87,7 @@ namespace Docking {
 				finishLine();
 				Console.WriteLine(" [+] " + Current.Value + " -> " + neighbour.Value + (neighbour.Value <= Best.Value ? " best" : ""));
 				Accept(neighbour);
-			} else if (random.NextDouble() < Math.Exp(-delta / (Math.Max(Current.Value, 1) * controlParameter))) {
+			} else if (neighbour.Value < float.MaxValue && random.NextDouble() < Math.Exp(-delta / (Math.Max(Current.Value, 1) * controlParameter))) {
 				finishLine();
 				Console.WriteLine(" [-] " + Current.Value + " -> " + neighbour.Value);
 				Accept(neighbour);
@@ -110,6 +110,7 @@ namespace Docking {
 			}
 		}
 
+		float nextX3 = -1;
 		private State GetNeighbour() {
 			float dX = randomFloat(sizeParameter * 20);
 			float dY = randomFloat(sizeParameter * 20);
@@ -121,24 +122,23 @@ namespace Docking {
 			// Choose 3 points (0, 1, x3) and plot a parabola between them.
 			// Then search the minimum of the parabola, if it exists.
 			
-			// Console.WriteLine("------------");
-			
 			Transformation a = Current.Transform.Modify(dX, dY, dZ, dYaw, dPitch, dRoll);
-			float x3 = -1; // random.Next(1) == 1 ? 2 : -1;
+			float x3 = nextX3;
+			nextX3 = 1 - x3; // 2 -> -1, -1 -> 2
 			Transformation b = Current.Transform.Modify(x3 * dX, x3 * dY, x3 * dZ, x3 * dYaw, x3 * dPitch, x3 * dRoll);
 			
 			float aValue = grid.GetValue(a);
 			float bValue = grid.GetValue(b);
 			
-			float x4 = findExtreme(0, 1, x3, Current.Value, aValue, bValue);
-			Transformation c;
-			float cValue;
-			if (float.IsNaN(x4)) {
-				c = a;
-				cValue = float.MaxValue;
-			} else {
-				c = Current.Transform.Modify(x4 * dX, x4 * dY, x4 * dZ, x4 * dYaw, x4 * dPitch, x4 * dRoll);
-				cValue = grid.GetValue(c);
+			Transformation c = a;
+			float cValue = float.MaxValue;
+			
+			if (aValue < float.MaxValue && bValue < float.MaxValue) {
+				float x4 = findExtreme(0, 1, x3, Current.Value, aValue, bValue);
+				if (!float.IsNaN(x4)) {
+					c = Current.Transform.Modify(x4 * dX, x4 * dY, x4 * dZ, x4 * dYaw, x4 * dPitch, x4 * dRoll);
+					cValue = grid.GetValue(c);
+				}
 			}
 
 			if (aValue <= bValue && aValue <= cValue) {
@@ -161,9 +161,6 @@ namespace Docking {
 			float a1 = x1 * (y2 - y3);
 			float a2 = x2 * (y3 - y1);
 			float a3 = x3 * (y1 - y2);
-			// Console.WriteLine(x1 + ", " + x2 + ", " + x3);
-			// Console.WriteLine(y1 + ", " + y2 + ", " + y3);
-			// Console.WriteLine(a1 + ", " + a2 + ", " + a3 + "; " + (a1 + a2 + a3));
 			return (x1 * a1 + x2 * a2 + x3 * a3) / (a1 + a2 + a3);
 		}
 	}

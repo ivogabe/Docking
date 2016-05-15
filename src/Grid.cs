@@ -89,19 +89,14 @@ namespace Docking {
 			for (int i = 0; i < moleculeA.Size; i++) {
 				Vector vector = moleculeA.GetAtom(i);
 				Block block = GetBlock(vector);
-				// Console.WriteLine("atom  " + vector);
-				// Console.WriteLine("block " + BlockCenter(block));
 				
 				for (int x = block.X - radius; x <= block.X + radius; x++) {
 					for (int y = block.Y - radius; y <= block.Y + radius; y++) {
 						for (int z = block.Z - radius; z <= block.Z + radius; z++) {
 							Block current = new Block(x, y, z);
-							// Console.WriteLine("atom  " + vector);
-							// Console.WriteLine("block " + BlockCenter(current));
-							// Console.WriteLine("Distance squared " + vector.DistanceSquared(BlockCenter(current)) + ", max " + radiusSquared);
-							// if (vector.DistanceSquared(BlockCenter(current)) <= radiusSquared) {
+							if (vector.DistanceSquared(BlockCenter(current)) <= radiusSquared) {
 								callback(current, i);
-							// }
+							}
 						}
 					}
 				}
@@ -152,7 +147,6 @@ namespace Docking {
 				
 				int blockId = GetIndex(block);
 				int end = blockStartIndex[blockId] + atomsInBlock[blockId];
-				// Console.WriteLine("start = " + blockStartIndex[blockId] + ", end = " + end + ", " + blockId);
 				for (int j = blockStartIndex[blockId]; j < end; j++) {
 					float energy = energyBetween(transform, atomIndices[j], i);
 					if (energy != 0) {
@@ -164,11 +158,9 @@ namespace Docking {
 			// If the molecules don't interact with eachother,
 			// return MaxValue so we won't choose this configuration
 			if (!near) {
-				// Console.WriteLine("Too far " + transform);
 				return float.MaxValue;
-			} else {
-				// Console.WriteLine("Ok " + result + ", " + transform);
 			}
+			
 			return result;
 		}
 		
