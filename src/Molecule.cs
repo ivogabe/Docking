@@ -22,7 +22,7 @@ namespace Docking {
 			List<string> atoms = new List<string>();
 			while (read.Peek() >= 0) {
 				string line = read.ReadLine();
-				if (line.StartsWith("ATOM")) {
+				if (line.StartsWith("ATOM") || line.StartsWith("HETATM")) {
 					atoms.Add(line);
 				}				
 			}
