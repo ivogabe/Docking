@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Collections.Generic;
 
@@ -18,13 +17,13 @@ namespace Docking {
 		public Molecule(string fileName) {
 			FileName = fileName;
 			
-			StreamReader read = new StreamReader(fileName);
+			StreamReader read = new StreamReader(File.Open(fileName, FileMode.Open));
 			List<string> atoms = new List<string>();
 			while (read.Peek() >= 0) {
 				string line = read.ReadLine();
 				if (line.StartsWith("ATOM") || line.StartsWith("HETATM")) {
 					atoms.Add(line);
-				}				
+				}
 			}
 			Size = atoms.Count;
 			AtomNames = new string[Size];

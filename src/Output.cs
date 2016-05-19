@@ -12,7 +12,7 @@ namespace Docking {
 		private int atomId = 1;
 		
 		private Output(string fileName, Molecule moleculeA, Molecule moleculeB, Transformation transform, float value) {
-			writer = new StreamWriter(fileName);
+			writer = new StreamWriter(File.Open(fileName, FileMode.OpenOrCreate));
 			
 			addRemark(new string [] { "Binding of " + moleculeA.FileName, "with " + moleculeB.FileName });
 			addRemark(new string [] { "Energy between molecules: " + value.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture) });
@@ -42,8 +42,7 @@ namespace Docking {
 					moleculeB.Diameter[i]
 				);
 			}
-			
-			writer.Close();
+			writer.Flush();
 		}
 		
 		private void addRemark(string[] lines) {

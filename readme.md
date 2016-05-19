@@ -4,4 +4,4 @@ Program that searches the binding of a protein and a ligand. This is a project f
 
 How to run
 ----------
-First you must install ASP.NET 5 and run `dnu restore` in a terminal. Then you can run the program with `dnx run`.
+First you must install .NET Core and run `dotnet restore` in a terminal. Then you can run the program with `dotnet run`.
