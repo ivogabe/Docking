@@ -14,11 +14,21 @@ namespace Docking {
 			Molecule moleculeB = new Molecule(args[1]);
 			Console.WriteLine("Create grid");
 			Grid grid = new Grid(moleculeA, moleculeB);
-			Search search = new Search(grid);
-			search.Run(10000);
-			Console.WriteLine();
-			Console.WriteLine("Best score " + search.Best.Value);
-			Output.Write(args[2], moleculeA, moleculeB, search.Best.Transform, search.Best.Value);
+			
+			State best = new State(new Transformation(0, 0, 0, new Vector(0, 0, 0)), float.MaxValue);
+			
+			for (int i = 0; i < 5; i++) {
+				Console.WriteLine("Run " + i);
+				Search search = new Search(grid);
+				search.Run(2000);
+				Console.WriteLine();
+				Console.WriteLine(" Best score " + search.Best.Value);
+				if (search.Best.Value < best.Value) {
+					best = search.Best;
+				}
+			}
+			Console.WriteLine("Global best score " + best.Value);
+			Output.Write(args[2], moleculeA, moleculeB, best.Transform, best.Value);
 		}
 	}
 }
