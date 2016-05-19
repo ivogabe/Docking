@@ -22,12 +22,12 @@ namespace Docking {
 				Search search = new Search(grid);
 				search.Run(2000);
 				Console.WriteLine();
-				Console.WriteLine(" Best score " + search.Best.Value);
+				Console.WriteLine(" Best score " + Utils.FloatToString(search.Best.Value));
 				if (search.Best.Value < best.Value) {
 					best = search.Best;
 				}
 			}
-			Console.WriteLine("Global best score " + best.Value);
+			Console.WriteLine("Global best score " + Utils.FloatToString(best.Value));
 			Output.Write(args[2], moleculeA, moleculeB, best.Transform, best.Value);
 		}
 	}

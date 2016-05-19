@@ -55,8 +55,12 @@ namespace Docking {
 			);
 		}
 		
+		public string RotationString() {
+			return Utils.FloatToString(yaw) + ", " + Utils.FloatToString(pitch) + ", " + Utils.FloatToString(roll);
+		}
+		
 		public override string ToString() {
-			return "Transformation (" + yaw + ", " + pitch + ", " + roll + "); " + Transpose;
+			return "Transformation (" + RotationString() + "); " + Transpose;
 		}
 	}
 	struct Matrix {
@@ -133,7 +137,7 @@ namespace Docking {
 		}
 		
 		public override string ToString() {
-			return "Vector (" + X + ", " + Y + ", " + Z + ")";
+			return "Vector (" + Utils.FloatToString(X) + ", " + Utils.FloatToString(Y) + ", " + Utils.FloatToString(Z) + ")";
 		}
 	}
 }

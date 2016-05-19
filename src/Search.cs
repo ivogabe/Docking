@@ -56,7 +56,7 @@ namespace Docking {
 		
 		public void Step() {
 			if (iteration % 100 == 0) {
-				Console.WriteLine(" Iteration " + iteration + ", value " + Current.Value + ", best " + Best.Value);
+				Console.WriteLine(" Iteration " + iteration + ", value " + Utils.FloatToString(Current.Value) + ", best " + Utils.FloatToString(Best.Value));
 				controlParameter *= 0.9f;
 				sizeParameter *= 0.7f;
 			}

@@ -43,11 +43,11 @@ namespace Docking {
 				if (AminoAcidIds[i] > MaxAminoAcidId) {
 					MaxAminoAcidId = AminoAcidIds[i];
 				}
-				X[i] = float.Parse(data[5], System.Globalization.CultureInfo.InvariantCulture);
-				Y[i] = float.Parse(data[6], System.Globalization.CultureInfo.InvariantCulture);
-				Z[i] = float.Parse(data[7], System.Globalization.CultureInfo.InvariantCulture);
-				Charge[i] = float.Parse(data[8], System.Globalization.CultureInfo.InvariantCulture);
-				Diameter[i] = float.Parse(data[9], System.Globalization.CultureInfo.InvariantCulture) * 2;
+				X[i] = Utils.ParseFloat(data[5]);
+				Y[i] = Utils.ParseFloat(data[6]);
+				Z[i] = Utils.ParseFloat(data[7]);
+				Charge[i] = Utils.ParseFloat(data[8]);
+				Diameter[i] = Utils.ParseFloat(data[9]) * 2;
 				i++;
 			}
 		}
