@@ -8,7 +8,6 @@ namespace Docking {
 		
 		private StreamWriter writer;
 		private int remarkId = 1;
-		private int atomId = 1;
 		
 		private Output(string fileName, Molecule moleculeA, Molecule moleculeB, Transformation transform, float value) {
 			writer = new StreamWriter(File.Open(fileName, FileMode.Create));
@@ -26,6 +25,8 @@ namespace Docking {
 			
 			for (int i = 0; i < moleculeA.Size; i++) {
 				addAtom(
+					moleculeA.IsHetAtm[i],
+					moleculeA.AtomId[i],
 					moleculeA.AtomNames[i],
 					moleculeA.AminoAcids[i],
 					moleculeA.AminoAcidIds[i],
@@ -39,6 +40,8 @@ namespace Docking {
 			for (int i = 0; i < moleculeB.Size; i++) {
 				Vector vector = transform.Transform(moleculeB.GetAtom(i));
 				addAtom(
+					moleculeB.IsHetAtm[i],
+					moleculeA.MaxAtomId + moleculeB.AtomId[i],
 					moleculeB.AtomNames[i],
 					moleculeB.AminoAcids[i],
 					moleculeB.AminoAcidIds[i],
@@ -49,7 +52,13 @@ namespace Docking {
 					moleculeB.Diameter[i]
 				);
 			}
-			addRemark(new string [] { "End" });
+			for (int i = 0; i < moleculeA.Connections.Length; i++) {
+				addConnect(moleculeA.Connections[i], 0);
+			}
+			for (int i = 0; i < moleculeB.Connections.Length; i++) {
+				addConnect(moleculeB.Connections[i], moleculeA.MaxAtomId);
+			}
+			writer.Write("END");
 			writer.Flush();
 		}
 		
@@ -60,9 +69,10 @@ namespace Docking {
 			}
 			remarkId++;
 		}
-		private void addAtom(string atom, string aminoAcid, int aminoAcidId, float x, float y, float z, float charge, float diameter) {
+		private void addAtom(bool isHetAtm, int atomId, string atom, string aminoAcid, int aminoAcidId, float x, float y, float z, float charge, float diameter) {
 			writer.WriteLine(
-				"ATOM " + prefix(atomId.ToString(), 6)
+				(isHetAtm ? "HETATM " : "ATOM   ")
+				+ prefix(atomId.ToString(), 4)
 				+ " " + postfix(atom.Length > 4 ? atom : " " + atom, 3)
 				+ " " + postfix(aminoAcid, 3)
 				+ " " + prefix(aminoAcidId.ToString(), 5)
@@ -73,6 +83,15 @@ namespace Docking {
 				+ " " + prefix(Utils.FloatToString(diameter / 2), 6)
 			);
 			atomId++;
+		}
+		private void addConnect(Connections connects, int idIncrease) {
+			writer.Write("CONECT ");
+			writer.Write(prefix((connects.From + idIncrease).ToString(), 4));
+			foreach (int to in connects.To) {
+				writer.Write(" ");
+				writer.Write(prefix((to + idIncrease).ToString(), 4));
+			}
+			writer.WriteLine();
 		}
 		
 		private string prefix(string str, int length) {

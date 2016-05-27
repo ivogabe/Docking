@@ -5,6 +5,8 @@ namespace Docking {
 	class Molecule {
 		public string FileName;
 		public int Size;
+		public bool[] IsHetAtm;
+		public int[] AtomId;
 		public string[] AtomNames;
 		public string[] AminoAcids;
 		public int[] AminoAcidIds;
@@ -13,19 +15,26 @@ namespace Docking {
 		public float[] Z;
 		public float[] Diameter;
 		public float[] Charge;
+		public Connections[] Connections;
+		public int MaxAtomId;
 		public int MaxAminoAcidId;
 		public Molecule(string fileName) {
 			FileName = fileName;
 			
 			StreamReader read = new StreamReader(File.Open(fileName, FileMode.Open));
 			List<string> atoms = new List<string>();
+			List<string> connects = new List<string>();
 			while (read.Peek() >= 0) {
 				string line = read.ReadLine();
 				if (line.StartsWith("ATOM") || line.StartsWith("HETATM")) {
 					atoms.Add(line);
+				} else if (line.StartsWith("CONECT")) {
+					connects.Add(line);
 				}
 			}
 			Size = atoms.Count;
+			IsHetAtm = new bool[Size];
+			AtomId = new int[Size];
 			AtomNames = new string[Size];
 			AminoAcids = new string[Size];
 			AminoAcidIds = new int[Size];
@@ -37,6 +46,11 @@ namespace Docking {
 			int i = 0;
 			foreach(string r in atoms) {
 				List<string> data = SplitString(r);
+				IsHetAtm[i] = data[0] == "HETATM";
+				AtomId[i] = int.Parse(data[1]);
+				if (AtomId[i] > MaxAtomId) {
+					MaxAtomId = AtomId[i];
+				}
 				AtomNames[i] = data[2];
 				AminoAcids[i] = data[3];
 				AminoAcidIds[i] = int.Parse(data[4]);
@@ -48,6 +62,18 @@ namespace Docking {
 				Z[i] = Utils.ParseFloat(data[7]);
 				Charge[i] = Utils.ParseFloat(data[8]);
 				Diameter[i] = Utils.ParseFloat(data[9]) * 2;
+				i++;
+			}
+			Connections = new Connections[connects.Count];
+			i = 0;
+			foreach (string r in connects) {
+				List<string> data = SplitString(r);
+				int from = int.Parse(data[1]);
+				int[] to = new int[data.Count - 2];
+				for (int j = 0; j < data.Count - 2; j++) {
+					to[j] = int.Parse(data[j + 2]);
+				}
+				Connections[i] = new Connections(from, to);
 				i++;
 			}
 		}
@@ -72,6 +98,15 @@ namespace Docking {
 				begin = end + 1;
 			}
 			return result;
+		}
+	}
+	
+	struct Connections {
+		public int From;
+		public int[] To;
+		public Connections(int from, int[] to) {
+			From = from;
+			To = to;
 		}
 	}
 }
