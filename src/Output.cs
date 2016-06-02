@@ -1,5 +1,25 @@
 using System.IO;
 
+// PDB specification: http://deposit.rcsb.org/adit/docs/pdb_atom_format.html#ATOM
+//  1 -  6        Record name     "ATOM  "
+//  7 - 11        Integer         Atom serial number.
+// 13 - 16        Atom            Atom name.
+// 17             Character       Alternate location indicator.
+// 18 - 20        Residue name    Residue name.
+// 22             Character       Chain identifier.
+// 23 - 26        Integer         Residue sequence number.
+// 27             AChar           Code for insertion of residues.
+// 31 - 38        Real(8.3)       Orthogonal coordinates for X in Angstroms.
+// 39 - 46        Real(8.3)       Orthogonal coordinates for Y in Angstroms.
+// 47 - 54        Real(8.3)       Orthogonal coordinates for Z in Angstroms.
+// 55 - 60        Real(6.2)       Occupancy.
+// 61 - 66        Real(6.2)       Temperature factor (Default = 0.0).
+// 73 - 76        LString(4)      Segment identifier, left-justified.
+// 77 - 78        LString(2)      Element symbol, right-justified.
+// 79 - 80        LString(2)      Charge on the atom.
+// Example:
+// ATOM    145  N   VAL A  25      32.433  16.336  57.540  1.00 11.92      A1   N
+
 namespace Docking {
 	class Output {
 		public static void Write(string fileName, Molecule moleculeA, Molecule moleculeB, Transformation transform, float value) {
@@ -29,6 +49,7 @@ namespace Docking {
 					moleculeA.AtomId[i],
 					moleculeA.AtomNames[i],
 					moleculeA.AminoAcids[i],
+					'A',
 					moleculeA.AminoAcidIds[i],
 					moleculeA.X[i],
 					moleculeA.Y[i],
@@ -44,7 +65,8 @@ namespace Docking {
 					moleculeA.MaxAtomId + moleculeB.AtomId[i],
 					moleculeB.AtomNames[i],
 					moleculeB.AminoAcids[i],
-					moleculeB.AminoAcidIds[i],
+					'B',
+					moleculeA.MaxAminoAcidId + moleculeB.AminoAcidIds[i],
 					vector.X,
 					vector.Y,
 					vector.Z,
@@ -69,18 +91,21 @@ namespace Docking {
 			}
 			remarkId++;
 		}
-		private void addAtom(bool isHetAtm, int atomId, string atom, string aminoAcid, int aminoAcidId, float x, float y, float z, float charge, float diameter) {
+		private void addAtom(bool isHetAtm, int atomId, string atom, string aminoAcid, char molecule, int aminoAcidId, float x, float y, float z, float charge, float diameter) {
 			writer.WriteLine(
-				(isHetAtm ? "HETATM " : "ATOM   ")
-				+ prefix(atomId.ToString(), 4)
-				+ " " + postfix(atom.Length > 4 ? atom : " " + atom, 3)
-				+ " " + postfix(aminoAcid, 3)
-				+ " " + prefix(aminoAcidId.ToString(), 5)
-				+ " " + prefix(Utils.FloatToString(x, "0.###"), 7)
-				+ " " + prefix(Utils.FloatToString(x, "0.###"), 7)
-				+ " " + prefix(Utils.FloatToString(x, "0.###"), 7)
-				+ " " + prefix(Utils.FloatToString(charge), 7)
-				+ " " + prefix(Utils.FloatToString(diameter / 2), 6)
+				(isHetAtm ? "HETATM" : "ATOM  ")
+				+ prefix(atomId.ToString(), 5)
+				+ " " + postfix(atom.Length > 4 ? atom : " " + atom, 5)
+				+ postfix(aminoAcid, 3)
+				+ " " + molecule
+				+ " " + prefix(aminoAcidId.ToString(), 3)
+				+ "    "
+				+ prefix(Utils.FloatToString(x, "0.###"), 8)
+				+ prefix(Utils.FloatToString(y, "0.###"), 8)
+				+ prefix(Utils.FloatToString(z, "0.###"), 8)
+				/* + prefix(Utils.FloatToString(charge), 7)
+				+ prefix(Utils.FloatToString(diameter / 2), 6) */
+				+ "  1.00 00.00           " + atom.Substring(0, 1)
 			);
 			atomId++;
 		}

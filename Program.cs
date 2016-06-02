@@ -6,7 +6,7 @@ namespace Docking {
 			if (args.Length != 3) {
 				Console.WriteLine("Docking");
 				Console.WriteLine("Usage:");
-				Console.WriteLine("  dotnet run protein.pdb ligand.pdb output.pdb");
+				Console.WriteLine("  dotnet run protein.pqr ligand.pqr output.pdb");
 				return;
 			}
 			Console.WriteLine("Read molecules");
@@ -17,7 +17,7 @@ namespace Docking {
 			
 			State best = new State(new Transformation(0, 0, 0, new Vector(0, 0, 0)), float.MaxValue);
 			
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < 10; i++) {
 				Console.WriteLine("Run " + i);
 				Search search = new Search(grid);
 				search.Run(2000);
