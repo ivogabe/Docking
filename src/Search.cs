@@ -21,13 +21,22 @@ namespace Docking {
 		private float controlParameter;
 		private Grid grid;
 		
+		private float randomFloatCentered(float radius) {
+			return randomFloat(radius) - radius / 2;
+		}
+		
 		public Search(Grid grid) {
 			this.grid = grid;
 			float value = float.NaN;
 			Transformation transform;
 			Console.WriteLine(" Find starting position");
+			
+			Transformation b = new Transformation(0.0766f, 4.3765f, 3.064f, new Vector(50.2889f, 9.0058f, 32.3689f));
+			
 			do {
-				Vector vector = new Vector(
+				transform = b.Modify(randomFloatCentered(1f), randomFloatCentered(1f), randomFloatCentered(1f), randomFloatCentered(0.1f), randomFloatCentered(0.1f), randomFloatCentered(0.1f));
+				
+				/* Vector vector = new Vector(
 					randomFloat(120) - 60,
 					randomFloat(120) - 60,
 					randomFloat(120) - 60
@@ -37,9 +46,10 @@ namespace Docking {
 					randomFloat((float)Math.PI * 2),
 					randomFloat((float)Math.PI * 2),
 					vector
-				);
+				);*/
 				value = grid.GetValue(transform);
 			} while (float.IsNaN(value) || float.IsInfinity(value) || value > 10);
+			
 			controlParameter = 0.5f;
 			Best = Current = new State(
 				transform,
