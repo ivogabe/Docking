@@ -22,23 +22,23 @@ namespace Docking {
 		
 		private Matrix yawMatrix() {
 			return new Matrix(
-				(float)Math.Cos(yaw), -(float)Math.Sin(yaw), 0,
-				(float)Math.Sin(yaw), (float)Math.Cos(yaw), 0,
+				Math.Cos(yaw), -Math.Sin(yaw), 0,
+				Math.Sin(yaw), Math.Cos(yaw), 0,
 				0, 0, 1
 			);
 		}
 		private Matrix pitchMatrix() {
 			return new Matrix(
-				(float)Math.Cos(pitch), 0, (float)Math.Sin(pitch),
+				Math.Cos(pitch), 0, Math.Sin(pitch),
 				0, 1, 0,
-				-(float)Math.Sin(pitch), 0, (float)Math.Cos(pitch)
+				-Math.Sin(pitch), 0, Math.Cos(pitch)
 			);
 		}
 		private Matrix rollMatrix() {
 			return new Matrix(
 				1, 0, 0,
-				0, (float)Math.Cos(roll), -(float)Math.Sin(roll),
-				0, (float)Math.Sin(roll), (float)Math.Cos(roll)
+				0, Math.Cos(roll), -Math.Sin(roll),
+				0, Math.Sin(roll), Math.Cos(roll)
 			);
 		}
 		
@@ -66,7 +66,7 @@ namespace Docking {
 	struct Matrix {
 		public static Matrix Zero = new Matrix(0, 0, 0, 0, 0, 0, 0, 0, 0);
 		
-		public Matrix(float a1, float a2, float a3, float b1, float b2, float b3, float c1, float c2, float c3) {
+		public Matrix(double a1, double a2, double a3, double b1, double b2, double b3, double c1, double c2, double c3) {
 			A1 = a1;
 			A2 = a2;
 			A3 = a3;
@@ -78,9 +78,9 @@ namespace Docking {
 			C3 = c3;
 		}
 		
-		public float A1, A2, A3;
-		public float B1, B2, B3;
-		public float C1, C2, C3;
+		public double A1, A2, A3;
+		public double B1, B2, B3;
+		public double C1, C2, C3;
 		
 		public Matrix Multiply(Matrix other) {
 			return new Matrix(
@@ -100,9 +100,9 @@ namespace Docking {
 		
 		public Vector MultiplyVector(Vector vector) {
 			return new Vector(
-				A1 * vector.X + A2 * vector.Y + A3 * vector.Z,
-				B1 * vector.X + B2 * vector.Y + B3 * vector.Z,
-				C1 * vector.X + C2 * vector.Y + C3 * vector.Z
+				(float) (A1 * vector.X + A2 * vector.Y + A3 * vector.Z),
+				(float) (B1 * vector.X + B2 * vector.Y + B3 * vector.Z),
+				(float) (C1 * vector.X + C2 * vector.Y + C3 * vector.Z)
 			);
 		}
 	}
