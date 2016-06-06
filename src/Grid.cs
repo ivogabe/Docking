@@ -170,7 +170,7 @@ namespace Docking {
 			float distanceSquared = atomA.DistanceSquared(atomB);
 			if (distanceSquared > maxDistanceSquared) return 0;
 			
-			float distance = Math.Max((float) Math.Sqrt(distanceSquared), 0.01f);
+			float distance = Math.Max((float) Math.Sqrt(distanceSquared), 0.1f);
 			float electrostatic = moleculeA.Charge[idA] * moleculeB.Charge[idB] / (4 * (float) Math.PI * epsilon0 * distance);
 			float sigma = (moleculeA.Diameter[idA] + moleculeB.Diameter[idB]) * 0.5f;
 			float pow6 = power6(sigma / distance);
