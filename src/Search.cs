@@ -31,12 +31,12 @@ namespace Docking {
 			Transformation transform;
 			Console.WriteLine(" Find starting position");
 			
-			Transformation b = new Transformation(0.0766f, 4.3765f, 3.064f, new Vector(50.2889f, 9.0058f, 32.3689f));
+			Transformation b = new Transformation(0.0126f, 4.2048f, 5.193f, new Vector(37.8144f, -53.9537f, -55.1462f));
 			
 			do {
-				transform = b.Modify(randomFloatCentered(1f), randomFloatCentered(1f), randomFloatCentered(1f), randomFloatCentered(0.1f), randomFloatCentered(0.1f), randomFloatCentered(0.1f));
-				
-				/* Vector vector = new Vector(
+				transform = b.Modify(randomFloatCentered(0.4f), randomFloatCentered(0.4f), randomFloatCentered(0.4f), randomFloatCentered(0.1f), randomFloatCentered(0.1f), randomFloatCentered(0.1f));
+				/*
+				Vector vector = new Vector(
 					randomFloat(120) - 60,
 					randomFloat(120) - 60,
 					randomFloat(120) - 60
@@ -70,7 +70,7 @@ namespace Docking {
 				controlParameter *= 0.9f;
 				sizeParameter *= 0.7f;
 			}
-			if (stableSteps > 20) {
+			if (stableSteps > 40) {
 				controlParameter *= 1.5f;
 				sizeParameter *= 1.1f;
 				stableSteps = 0;
